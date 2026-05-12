@@ -16,4 +16,6 @@ if (!fs.existsSync(src)) {
 }
 fs.mkdirSync(dist, { recursive: true });
 fs.copyFileSync(src, dest);
+const files = fs.readdirSync(dist);
 console.log('vercel-build: 已复制 index.html -> dist/index.html');
+console.log('vercel-build: dist 目录内容:', files.join(', '));
