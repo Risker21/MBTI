@@ -1,4 +1,7 @@
 {
+  "installCommand": "npm install",
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "dist",
   "functions": {
     "api/mbti/question.js": {
       "maxDuration": 10
