@@ -1,8 +1,8 @@
 const http = require('http');
-const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const { fetchUpstream } = require('./api/_lib/mbtiUpstream');
 
 // ---- 加载 .env ----
 const envFile = path.join(__dirname, '.env');
@@ -39,67 +39,58 @@ const MIME = {
   '.ico': 'image/x-icon',
 };
 
-function proxyRequest(target, res) {
-  const apiReq = https.get(target, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      'Accept': 'application/json, text/plain, */*',
-    }
-  }, (apiRes) => {
-    let body = '';
-    apiRes.on('data', d => body += d);
-    apiRes.on('end', () => {
-      console.log(`[API] ${apiRes.statusCode} ${body.substring(0, 150)}`);
-      res.writeHead(200, {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Access-Control-Allow-Origin': '*',
-      });
-      res.end(body);
+function sendJson(res, status, obj) {
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Access-Control-Allow-Origin': '*',
+  });
+  res.end(JSON.stringify(obj));
+}
+
+async function proxyMbti(upstreamPath, res, logPrefix) {
+  try {
+    const { statusCode, body } = await fetchUpstream(upstreamPath);
+    console.log(`${logPrefix} 上游 HTTP ${statusCode} ${body.substring(0, 150)}`);
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
     });
-  });
-
-  apiReq.on('error', (e) => {
-    console.error(`[API] 错误: ${e.message}`);
-    res.writeHead(502, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ code: 502, msg: 'API 请求失败: ' + e.message }));
-  });
-
-  apiReq.setTimeout(15000, () => {
-    apiReq.destroy();
-    res.writeHead(504, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ code: 504, msg: '请求超时' }));
-  });
+    res.end(body);
+  } catch (e) {
+    console.error(`${logPrefix} 错误: ${e.message}`);
+    const code = e.message === '请求超时' ? 504 : 502;
+    sendJson(res, code, { code, msg: e.message === '请求超时' ? '请求超时' : 'API 请求失败: ' + e.message });
+  }
 }
 
 const server = http.createServer((req, res) => {
   const parsed = url.parse(req.url, true);
 
-  // ---- API 代理：前端不传 key/id，由服务端注入 ----
   if (parsed.pathname === '/api/mbti/question') {
     const q = parsed.query;
-    const num = parseInt(q.num) || 1;
-    const version = parseInt(q.version) || 3;
-    const target = `https://cn.apihz.cn/api/mingli/mbti.php?id=${API_ID}&key=${API_KEY}&type=1&version=${version}&num=${num}`;
+    const num = parseInt(q.num, 10) || 1;
+    const version = parseInt(q.version, 10) || 3;
+    const upstreamPath =
+      `/api/mingli/mbti.php?id=${encodeURIComponent(API_ID)}&key=${encodeURIComponent(API_KEY)}&type=1&version=${version}&num=${num}`;
     console.log(`[问题] v${version} #${num}`);
-    proxyRequest(target, res);
+    proxyMbti(upstreamPath, res, '[问题]');
     return;
   }
 
   if (parsed.pathname === '/api/mbti/submit') {
     const q = parsed.query;
-    const version = parseInt(q.version) || 3;
-    const qcan = q.qcan || '';
-    const target = `https://cn.apihz.cn/api/mingli/mbti.php?id=${API_ID}&key=${API_KEY}&type=2&version=${version}&qcan=${encodeURIComponent(qcan)}`;
+    const version = parseInt(q.version, 10) || 3;
+    const qcan = q.qcan != null ? String(q.qcan) : '';
+    const upstreamPath =
+      `/api/mingli/mbti.php?id=${encodeURIComponent(API_ID)}&key=${encodeURIComponent(API_KEY)}&type=2&version=${version}&qcan=${encodeURIComponent(qcan)}`;
     console.log(`[提交] v${version} 答案数=${qcan.split(',').length}`);
-    proxyRequest(target, res);
+    proxyMbti(upstreamPath, res, '[提交]');
     return;
   }
 
-  // ---- 静态文件 ----
   let filePath = parsed.pathname === '/' ? '/index.html' : parsed.pathname;
   filePath = path.join(__dirname, filePath);
 
-  // 防止路径穿越
   if (!filePath.startsWith(__dirname)) {
     res.writeHead(403);
     res.end('Forbidden');

@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/mbti/question.js": {
+      "maxDuration": 10
+    },
+    "api/mbti/submit.js": {
+      "maxDuration": 10
+    }
+  }
+}

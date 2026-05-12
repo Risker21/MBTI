@@ -1,9 +1,13 @@
 {
   "name": "mbti-test",
   "version": "1.0.0",
-  "description": "MBTI 性格测试网页应用",
-  "main": "server.js",
+  "description": "MBTI 性格测试网页应用（可部署 Vercel）",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   }
 }
