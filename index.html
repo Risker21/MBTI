@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MBTI 性格测试</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --paper: #f3f0ea;
+  --paper-2: #ebe6dd;
+  --ink: #252220;
+  --ink-soft: #4a4540;
+  --muted: #7a736a;
+  --line: rgba(37, 34, 32, 0.12);
+  --line-strong: rgba(37, 34, 32, 0.22);
+  --accent: #2f5d50;
+  --accent-hover: #244a40;
+  --accent-faint: rgba(47, 93, 80, 0.1);
+  --warn: #b45309;
+  --shadow: 0 1px 2px rgba(37, 34, 32, 0.06), 0 12px 40px rgba(37, 34, 32, 0.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-serif: "Noto Serif SC", "Songti SC", "SimSun", serif;
+}
+
+@keyframes enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes load-dots {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-3px); }
+}
+
+body {
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(47, 93, 80, 0.06), transparent 55%),
+    linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: clamp(20px, 4vw, 48px) 20px 40px;
+}
+
+.container {
+  width: 100%;
+  max-width: 520px;
+}
+
+.card {
+  background: #fffef9;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(28px, 5vw, 40px) clamp(22px, 4vw, 36px);
+  animation: enter 0.35s ease-out;
+}
+
+/* ---- 开始页 ---- */
+.start-card { text-align: left; }
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.logo-mark {
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+  padding: 5px;
+  flex-shrink: 0;
+  background: #fffef9;
+}
+
+.logo-mark span {
+  background: var(--ink);
+  opacity: 0.85;
+  border-radius: 1px;
+}
+
+.start-card h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.35rem, 4vw, 1.65rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+}
+
+.start-card .subtitle {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 6px 0 26px;
+  max-width: 36em;
+}
+
+.version-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.version-btn {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 254, 249, 0.6);
+  color: var(--ink);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: left;
+  font-family: inherit;
+}
+
+.version-btn:hover {
+  border-color: var(--line-strong);
+  background: #fffef9;
+}
+
+.version-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-faint);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.version-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin-right: 12px;
+  flex-shrink: 0;
+  color: var(--ink-soft);
+}
+
+.version-btn.active .version-num {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #fffef9;
+}
+
+.version-info { flex: 1; min-width: 0; }
+
+.version-name {
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 2px;
+}
+
+.version-desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.version-badge {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  padding-left: 8px;
+}
+
+.version-btn.active .version-badge {
+  color: var(--accent);
+}
+
+.start-btn {
+  width: 100%;
+  padding: 14px 18px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.start-btn:hover { background: var(--accent-hover); }
+.start-btn:active { transform: scale(0.99); }
+.start-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.error-msg {
+  color: var(--warn);
+  font-size: 0.82rem;
+  margin-top: 12px;
+  min-height: 1.2em;
+}
+
+.footer-note {
+  margin-top: 18px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* ---- 测试页 ---- */
+.quiz-card { display: none; }
+
+.progress-section {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.progress-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.progress-percent {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 3px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transform-origin: left;
+  transition: width 0.35s ease;
+}
+
+.question-badge {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.question-text {
+  font-size: 1.08rem;
+  line-height: 1.65;
+  margin-bottom: 24px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.option-btn {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fffef9;
+  color: var(--ink);
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  line-height: 1.55;
+  gap: 12px;
+  font-family: inherit;
+}
+
+.option-letter {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--ink-soft);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.option-btn:hover {
+  border-color: var(--line-strong);
+  background: #fff;
+}
+
+.option-btn.selected {
+  border-color: var(--accent);
+  background: var(--accent-faint);
+}
+
+.option-btn.selected .option-letter {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.nav-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.nav-btn {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: #fffef9;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.nav-btn:hover {
+  border-color: var(--line-strong);
+  background: #fff;
+}
+
+.nav-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.nav-btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ---- 加载 ---- */
+.loading-card {
+  display: none;
+  text-align: center;
+  padding: 48px 32px;
+}
+
+.loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.loading-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.35;
+  animation: load-dots 1s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+.loading-text {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+/* ---- 结果 ---- */
+.result-card {
+  display: none;
+  text-align: left;
+}
+
+.result-head {
+  padding-bottom: 20px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+.result-overline {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.result-type {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 9vw, 3rem);
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.result-name {
+  font-size: 1rem;
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+.dims-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.dim-card {
+  background: rgba(255, 254, 249, 0.8);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+}
+
+.dim-card .dim-pair {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.dim-card .dim-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.dim-card .dim-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.action-row { display: flex; gap: 10px; }
+
+.restart-btn {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: #fffef9;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.restart-btn:hover {
+  border-color: var(--line-strong);
+  background: #fff;
+}
+
+@media (max-width: 480px) {
+  .dims-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+<div class="container">
+
+  <div class="card start-card" id="startPage">
+    <div class="brand-row">
+      <div class="logo-mark" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div>
+        <h1>MBTI 性格测试</h1>
+        <p class="subtitle">按题目直觉作答即可，没有对错；结果仅供自我了解参考。</p>
+      </div>
+    </div>
+
+    <div class="version-group">
+      <button type="button" class="version-btn" data-version="1" onclick="selectVersion(1, this)">
+        <span class="version-num">01</span>
+        <div class="version-info">
+          <div class="version-name">基础版</div>
+          <div class="version-desc">48 题 · 约 10 分钟</div>
+        </div>
+        <span class="version-badge">速测</span>
+      </button>
+      <button type="button" class="version-btn" data-version="2" onclick="selectVersion(2, this)">
+        <span class="version-num">02</span>
+        <div class="version-info">
+          <div class="version-name">专业版</div>
+          <div class="version-desc">93 题 · 约 20 分钟</div>
+        </div>
+        <span class="version-badge">常用</span>
+      </button>
+      <button type="button" class="version-btn active" data-version="3" onclick="selectVersion(3, this)">
+        <span class="version-num">03</span>
+        <div class="version-info">
+          <div class="version-name">完整版</div>
+          <div class="version-desc">200 题 · 约 40 分钟</div>
+        </div>
+        <span class="version-badge">完整</span>
+      </button>
+    </div>
+
+    <button type="button" class="start-btn" onclick="startTest()">开始答题</button>
+    <div class="error-msg" id="startError"></div>
+    <p class="footer-note">答题进度仅保存在本页会话中，关闭页面前请留意未完成部分。</p>
+  </div>
+
+  <div class="card loading-card" id="loadingPage">
+    <div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    <p class="loading-text">正在加载题目…</p>
+  </div>
+
+  <div class="card quiz-card" id="quizPage">
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-label" id="progressLabel"></span>
+        <span class="progress-percent" id="progressPercent"></span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <div class="question-badge" id="questionBadge"></div>
+    <div class="question-text" id="questionText"></div>
+
+    <div class="option-list">
+      <button type="button" class="option-btn" id="optionA" onclick="choose('A')">
+        <span class="option-letter">A</span>
+        <span class="option-content" id="optionAText"></span>
+      </button>
+      <button type="button" class="option-btn" id="optionB" onclick="choose('B')">
+        <span class="option-letter">B</span>
+        <span class="option-content" id="optionBText"></span>
+      </button>
+    </div>
+
+    <div class="nav-btns">
+      <button type="button" class="nav-btn" id="prevBtn" onclick="prevQuestion()">上一题</button>
+      <button type="button" class="nav-btn primary" id="nextBtn" onclick="nextQuestion()">下一题</button>
+    </div>
+  </div>
+
+  <div class="card result-card" id="resultPage">
+    <div class="result-head">
+      <div class="result-overline">测验结果</div>
+      <div class="result-type" id="resultType"></div>
+      <div class="result-name" id="resultName"></div>
+    </div>
+    <div class="dims-grid" id="resultDims"></div>
+    <div class="action-row">
+      <button type="button" class="restart-btn" onclick="restart()">再测一次</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const MAX_QUESTIONS = { 1: 48, 2: 93, 3: 200 };
+
+const MBTI_INFO = {
+  'INTJ': { name: '建筑师' },
+  'INTP': { name: '逻辑学家' },
+  'ENTJ': { name: '指挥官' },
+  'ENTP': { name: '辩论家' },
+  'INFJ': { name: '提倡者' },
+  'INFP': { name: '调停者' },
+  'ENFJ': { name: '主人公' },
+  'ENFP': { name: '竞选者' },
+  'ISTJ': { name: '物流师' },
+  'ISFJ': { name: '守卫者' },
+  'ESTJ': { name: '总经理' },
+  'ESFJ': { name: '执政官' },
+  'ISTP': { name: '鉴赏家' },
+  'ISFP': { name: '探险家' },
+  'ESTP': { name: '企业家' },
+  'ESFP': { name: '表演者' }
+};
+
+let version = 3;
+let totalQuestions = 200;
+let currentNum = 1;
+let answers = {};
+let preloaded = {};
+
+function selectVersion(v, el) {
+  version = v;
+  totalQuestions = MAX_QUESTIONS[v];
+  document.querySelectorAll('.version-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function showPage(id) {
+  ['startPage', 'loadingPage', 'quizPage', 'resultPage'].forEach(p => {
+    document.getElementById(p).style.display = 'none';
+  });
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = '';
+}
+
+async function fetchQuestion(num) {
+  if (preloaded[num]) return preloaded[num];
+  const res = await fetch(`/api/mbti/question?version=${version}&num=${num}`);
+  const data = await res.json();
+  if (data.code !== 200) throw new Error(data.msg || '请求失败');
+  preloaded[num] = data;
+  return data;
+}
+
+async function prefetchNext(num) {
+  if (num <= totalQuestions && !preloaded[num]) {
+    try { await fetchQuestion(num); } catch(e) {}
+  }
+}
+
+async function startTest() {
+  currentNum = 1;
+  answers = {};
+  preloaded = {};
+
+  showPage('loadingPage');
+  try {
+    const data = await fetchQuestion(1);
+    showPage('quizPage');
+    renderQuestion(data);
+    prefetchNext(2);
+  } catch(e) {
+    showPage('startPage');
+    document.getElementById('startError').textContent = '加载失败：' + e.message;
+  }
+}
+
+function renderQuestion(data) {
+  document.getElementById('questionBadge').textContent = `第 ${currentNum} 题 / 共 ${totalQuestions} 题`;
+  document.getElementById('questionText').textContent = data.q;
+  document.getElementById('optionAText').textContent = data.a;
+  document.getElementById('optionBText').textContent = data.b;
+
+  const pct = ((currentNum - 1) / totalQuestions * 100).toFixed(1);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPercent').textContent = `${pct}%`;
+  document.getElementById('progressLabel').textContent = `已答 ${currentNum - 1} 题`;
+
+  document.getElementById('optionA').classList.toggle('selected', answers[currentNum] === 'A');
+  document.getElementById('optionB').classList.toggle('selected', answers[currentNum] === 'B');
+
+  document.getElementById('prevBtn').disabled = currentNum <= 1;
+
+  const nextBtn = document.getElementById('nextBtn');
+  if (currentNum >= totalQuestions) {
+    nextBtn.textContent = answers[currentNum] ? '查看结果' : '请选择后提交';
+  } else {
+    nextBtn.textContent = '下一题';
+  }
+}
+
+function choose(opt) {
+  answers[currentNum] = opt;
+  document.getElementById('optionA').classList.toggle('selected', opt === 'A');
+  document.getElementById('optionB').classList.toggle('selected', opt === 'B');
+
+  if (currentNum >= totalQuestions) {
+    document.getElementById('nextBtn').textContent = '查看结果';
+  }
+}
+
+async function nextQuestion() {
+  if (!answers[currentNum]) return;
+
+  if (currentNum >= totalQuestions) {
+    await submitAnswers();
+    return;
+  }
+
+  currentNum++;
+  showPage('loadingPage');
+
+  try {
+    const data = await fetchQuestion(currentNum);
+    showPage('quizPage');
+    renderQuestion(data);
+    prefetchNext(currentNum + 1);
+  } catch(e) {
+    currentNum--;
+    showPage('quizPage');
+    alert('加载下一题失败：' + e.message);
+  }
+}
+
+function prevQuestion() {
+  if (currentNum <= 1) return;
+  currentNum--;
+  renderQuestion(preloaded[currentNum]);
+}
+
+async function submitAnswers() {
+  const qcanArr = [];
+  for (let i = 1; i <= totalQuestions; i++) {
+    qcanArr.push(answers[i] || 'A');
+  }
+  const qcan = qcanArr.join(',');
+
+  showPage('loadingPage');
+  document.querySelector('#loadingPage .loading-text').textContent = '正在汇总结果…';
+
+  try {
+    const res = await fetch(`/api/mbti/submit?version=${version}&qcan=${encodeURIComponent(qcan)}`);
+    const data = await res.json();
+    if (data.code !== 200) throw new Error(data.msg || '提交失败');
+    showResult(data.mbti);
+  } catch(e) {
+    showPage('quizPage');
+    alert('提交失败：' + e.message);
+  }
+}
+
+function showResult(mbti) {
+  const info = MBTI_INFO[mbti] || { name: '' };
+  document.getElementById('resultType').textContent = mbti;
+  document.getElementById('resultName').textContent = info.name ? `「${info.name}」` : '';
+
+  const dims = [
+    { pair: 'E — I', label: '能量倾向', value: mbti[0] === 'E' ? '外向 E' : '内向 I' },
+    { pair: 'S — N', label: '认知偏好', value: mbti[1] === 'S' ? '实感 S' : '直觉 N' },
+    { pair: 'T — F', label: '判断依据', value: mbti[2] === 'T' ? '思考 T' : '情感 F' },
+    { pair: 'J — P', label: '对外态度', value: mbti[3] === 'J' ? '判断 J' : '知觉 P' }
+  ];
+
+  document.getElementById('resultDims').innerHTML = dims.map(d => `
+    <div class="dim-card">
+      <div class="dim-pair">${d.pair}</div>
+      <div class="dim-label">${d.label}</div>
+      <div class="dim-value">${d.value}</div>
+    </div>
+  `).join('');
+
+  showPage('resultPage');
+}
+
+function restart() {
+  document.getElementById('startError').textContent = '';
+  document.querySelector('#loadingPage .loading-text').textContent = '正在加载题目…';
+  showPage('startPage');
+}
+</script>
+</body>
+</html>

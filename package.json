@@ -1,0 +1,9 @@
+{
+  "name": "mbti-test",
+  "version": "1.0.0",
+  "description": "MBTI 性格测试网页应用",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
